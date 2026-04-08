@@ -1,0 +1,10 @@
+{
+  "name": "claude-code-recap",
+  "version": "1.0.0",
+  "description": "Generate layered summaries of what happened in your repository",
+  "author": {
+    "name": "Nikodem Wrona"
+  },
+  "license": "MIT",
+  "keywords": ["git", "recap", "summary", "changelog"]
+}
