@@ -106,7 +106,7 @@ First, calculate the cutoff date for the `gh` search query. The `--since` durati
 
 Detect the platform and compute the date:
 ```bash
-if date -v-1d +%Y-%m-%d 2>/dev/null; then
+if date -v-1d +%Y-%m-%d >/dev/null 2>&1; then
   # macOS (BSD date)
   CUTOFF_DATE=$(date -v-<N><unit> +%Y-%m-%d)
 else
@@ -117,9 +117,11 @@ fi
 
 Replace `<N>` and `<unit>` with the values from the duration (e.g., for "7 days ago": `-v-7d` on macOS, `-d "7 days ago"` on Linux).
 
+**Important:** Run the date calculation and the `gh pr list` command below in a single Bash tool call — shell variables do not persist between separate tool calls.
+
 Then fetch all merged PRs in the window:
 ```bash
-gh pr list --state merged --search "merged:>$CUTOFF_DATE" \
+gh pr list --state merged --search "merged:>=$CUTOFF_DATE" \
   --json number,title,body,labels,reviews,mergeCommit,author,closedAt,url \
   --limit 200
 ```
