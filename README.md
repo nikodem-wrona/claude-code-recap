@@ -4,19 +4,22 @@ A Claude Code plugin that generates structured summaries of what happened in you
 
 ## Installation
 
-### From a git repository
+### Clone and load
 
 ```bash
-claude plugin install https://github.com/nikodem-wrona/claude-code-recap
+git clone https://github.com/nikodem-wrona/claude-code-recap ~/.claude/plugins/claude-code-recap
+claude --plugin-dir ~/.claude/plugins/claude-code-recap
 ```
 
 ### Local development
+
+If you've cloned the repo elsewhere, point to it directly:
 
 ```bash
 claude --plugin-dir /path/to/claude-code-recap
 ```
 
-This loads the plugin for a single session without installing it globally. Useful for testing changes.
+The `--plugin-dir` flag loads the plugin for a single session without installing it globally.
 
 ## Usage
 
