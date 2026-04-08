@@ -3,7 +3,7 @@ name: recap-agent
 description: Analyzes git history and produces a layered repository recap.
 model: sonnet
 tools: Bash
-maxTurns: 15
+maxTurns: 20
 background: true
 color: cyan
 ---
@@ -66,6 +66,86 @@ For each contributor found in step 2b, run:
 git log --since="<duration>" --author="<author name>" --numstat --pretty=format:""
 ```
 
+**2f. Active branches:**
+
+List all remote branches with their latest commit info:
+```bash
+git for-each-ref --sort=-committerdate refs/remotes/ --format='%(refname:short)|%(authorname)|%(committerdate:short)|%(subject)'
+```
+
+Skip `origin/HEAD` and default integration branches (`origin/main`, `origin/master`, `origin/develop`).
+
+Then check which branches have already been merged into the default branch:
+```bash
+git branch -r --merged main
+```
+(If `main` fails, try `master`.)
+
+Cross-reference the two outputs to determine, for each feature branch:
+- **Who** — the last committer (from `for-each-ref`)
+- **When** — date of the last commit (from `for-each-ref`)
+- **What** — last commit subject (from `for-each-ref`)
+- **Merged?** — whether the branch appears in the `--merged` list
+
+## Step 2.5: Collect GitHub PR data (optional)
+
+This step enriches the recap with pull request context. It requires the `gh` CLI to be installed and authenticated. If `gh` is unavailable, skip this entire step — the recap proceeds as git-only.
+
+**2.5a. Detect `gh` availability:**
+
+Run:
+```bash
+command -v gh && gh auth status 2>&1
+```
+
+If either command fails (non-zero exit), skip all remaining 2.5 steps and go directly to Step 3. Set a mental flag that GitHub data is unavailable — you will need this in Step 3 to add the degradation note.
+
+**2.5b. Calculate date and batch-fetch merged PRs:**
+
+First, calculate the cutoff date for the `gh` search query. The `--since` duration you received (e.g., "7 days ago") must be converted to a `YYYY-MM-DD` date.
+
+Detect the platform and compute the date:
+```bash
+if date -v-1d +%Y-%m-%d 2>/dev/null; then
+  # macOS (BSD date)
+  CUTOFF_DATE=$(date -v-<N><unit> +%Y-%m-%d)
+else
+  # Linux (GNU date)
+  CUTOFF_DATE=$(date -d "<N> <unit> ago" +%Y-%m-%d)
+fi
+```
+
+Replace `<N>` and `<unit>` with the values from the duration (e.g., for "7 days ago": `-v-7d` on macOS, `-d "7 days ago"` on Linux).
+
+Then fetch all merged PRs in the window:
+```bash
+gh pr list --state merged --search "merged:>$CUTOFF_DATE" \
+  --json number,title,body,labels,reviews,mergeCommit,author,closedAt,url \
+  --limit 200
+```
+
+This returns a JSON array. Parse it and hold it in memory for the remaining steps. If this command fails (e.g., the repo is not on GitHub), treat it as `gh` unavailable and skip to Step 3.
+
+**2.5c. Fetch linked issues:**
+
+For each PR from step 2.5b (capped at 50 PRs — if more were returned, use the 50 most recent by `closedAt`), fetch linked/closing issues:
+
+```bash
+gh pr view <number> --json closingIssuesReferences
+```
+
+Loop through all PR numbers. For each PR, record which issue numbers it closes. If a `gh pr view` call fails, skip that PR and continue with the rest.
+
+If there were more than 50 PRs, note the count of remaining PRs — you will include "*and N more pull requests*" in the output.
+
+**2.5d. Match PRs to commits:**
+
+Compare `mergeCommit.oid` from each PR (from step 2.5b) against the commit SHAs collected in Step 2a. Build a mapping of `commit SHA → PR data`.
+
+- Commits with a matching PR: their narrative in "By Contributor" and "By Area" sections will use the PR title and summarized description instead of the raw commit message.
+- Commits without a matching PR: use their commit message as-is (current behavior).
+- PRs without a matching commit (e.g., squash merges where the SHA changed): these still appear in the "Pull Requests" table but don't enrich the per-commit sections.
+
 ## Step 3: Produce the recap
 
 Using the collected data, produce a summary in EXACTLY this format:
@@ -94,6 +174,13 @@ Main areas: <top 3-5 directories by change volume>.
 1. <file path> (+<additions>/-<deletions>)
 2. <file path> (+<additions>/-<deletions>)
 <up to 10 files, ordered by total churn (additions + deletions) descending>
+
+### Active Branches
+| Branch | Last contributor | Last commit | Date | Merged? |
+|--------|-----------------|-------------|------|---------|
+| `<branch-name>` | <author name> | <last commit subject> | <date> | Yes / No |
+
+<list all feature branches, ordered by last commit date descending>
 ```
 
 ## Rules
@@ -103,3 +190,4 @@ Main areas: <top 3-5 directories by change volume>.
 - **Shallow clones:** If `git rev-list` returns fewer commits than expected or `^` references fail, work with what's available and add a note: "*Note: repository appears to be a shallow clone. Some history may be missing.*"
 - **File stats:** Always aggregate per-file stats by directory for the "By Area" section. Use individual file paths only in "Most Changed Files."
 - **Commit message analysis:** Read commit messages to understand WHAT changed, not just WHERE. The recap should tell a story, not just list statistics.
+- **Active branches:** Show as a dedicated table section. Skip `origin/HEAD` and default integration branches (`main`, `master`, `develop`). Strip the `origin/` prefix from branch names for cleaner display (e.g., `origin/feat/login` → `feat/login`). If there are no feature branches, omit the "Active Branches" section entirely. Mark branches as "Yes" in the Merged column if they appear in `git branch -r --merged main`.
