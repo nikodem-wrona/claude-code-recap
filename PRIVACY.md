@@ -4,20 +4,16 @@
 
 ## Data Collection
 
-This plugin does **not** collect, store, or transmit any personal data. It does not phone home, use analytics, or communicate with any external service.
+This plugin does **not** independently collect, store, or transmit any personal data. It does not phone home or use analytics.
 
 ## What the Plugin Accesses
 
-When you run `/recap`, the plugin executes local commands on your machine:
+When you run `/recap`, the plugin operates within Claude Code and communicates with the following services:
 
-- **Git commands** (`git log`, `git shortlog`, `git diff`, etc.) to read your repository's commit history.
-- **GitHub CLI commands** (`gh pr list`, `gh pr view`) to fetch pull request metadata from GitHub — only if `gh` is installed, authenticated, and the repository is hosted on GitHub. These requests go directly from your machine to GitHub using your own credentials.
+- **Anthropic (Claude Code)** — The plugin runs as a Claude Code agent. Repository data (commit messages, author names, file paths, diff statistics) is sent to Anthropic's API as part of the Claude Code session. This is governed by [Anthropic's Privacy Policy](https://www.anthropic.com/privacy).
+- **GitHub** — If the GitHub CLI (`gh`) is installed and authenticated, the plugin fetches pull request metadata (titles, descriptions, labels, reviewers, linked issues) from GitHub's API using your own credentials. This is governed by [GitHub's Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
 
-All output stays within your Claude Code session.
-
-## Third Parties
-
-The plugin itself makes no third-party requests. GitHub CLI usage is governed by [GitHub's Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
+The plugin itself has no server, database, or telemetry of its own.
 
 ## Changes
 
