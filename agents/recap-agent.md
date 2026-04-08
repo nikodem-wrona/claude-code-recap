@@ -152,7 +152,7 @@ Compare `mergeCommit.oid` from each PR (from step 2.5b) against the commit SHAs 
 
 Using the collected data, produce a summary in EXACTLY this format:
 
-**If GitHub data is unavailable** (Step 2.5 was skipped), add this line at the very top of the recap output, before the Summary:
+**If GitHub data is unavailable** (Step 2.5 was skipped), add this line immediately after the `## Repository Recap` heading and before `### Summary`:
 
 *Note: GitHub CLI not available — showing git-only recap. Install `gh` and run `gh auth login` for PR-enriched recaps.*
 
@@ -166,13 +166,15 @@ When GitHub data is unavailable, produce all sections exactly as before (without
 Main areas: <top 3-5 directories by change volume>.
 <if GitHub data available and PRs found:>
 <N> pull requests merged, covering <N> linked issues. Top labels: `label1`, `label2`, `label3`.
+<end if>
 
 ### By Contributor
 **<Author Name>** (<N> commits)
 - <2-3 sentence summary of what they did. For commits linked to PRs, use the PR title and a 1-2 sentence AI-generated summary of the PR body instead of raw commit messages. For commits not linked to PRs, use commit messages as before.>
 - Files: <top changed directories/files with stats, e.g. src/auth/*.ts (8 files, +400/-120)>
 <if GitHub data available:>
-- Also reviewed: #<PR number>, #<PR number> <list PRs where this person left reviews, if any>
+- Also reviewed: #<PR number>, #<PR number> <list PRs where this person left reviews, if any. Omit this line entirely if the contributor did not review any PRs.>
+<end if>
 
 <repeat for each contributor, ordered by commit count descending>
 
@@ -181,6 +183,7 @@ Main areas: <top 3-5 directories by change volume>.
 - <1-2 sentence summary of changes> (<contributor names>)
 <if GitHub data available and PRs with labels touched this area:>
 - Labels: `label1`, `label2` <deduplicated, sorted alphabetically>
+<end if>
 
 <repeat for top areas, ordered by change volume descending>
 
@@ -195,6 +198,7 @@ Main areas: <top 3-5 directories by change volume>.
 <if more than 50 PRs: add "*and N more pull requests*" at the end>
 
 Review status icons: ✅ = approved, 🔄 = changes requested.
+<end if>
 
 ### Most Changed Files
 1. <file path> (+<additions>/-<deletions>)
@@ -219,6 +223,7 @@ Review status icons: ✅ = approved, 🔄 = changes requested.
 - **Active branches:** Show as a dedicated table section. Skip `origin/HEAD` and default integration branches (`main`, `master`, `develop`). Strip the `origin/` prefix from branch names for cleaner display (e.g., `origin/feat/login` → `feat/login`). If there are no feature branches, omit the "Active Branches" section entirely. Mark branches as "Yes" in the Merged column if they appear in `git branch -r --merged main`.
 - **GitHub data is optional:** If `gh` is not installed or not authenticated, produce the recap without PR data. Add the graceful degradation note at the top. All existing sections render exactly as before. The "Pull Requests" section is omitted entirely.
 - **PR description summarization:** Condense each PR's body into 1-2 sentences that capture what the PR accomplished and why. Strip template boilerplate (checkboxes, `## Description` headers, horizontal rules, empty sections) before summarizing. If the body is empty or only contains template text, use the PR title as the summary.
-- **API efficiency:** Use the batch `gh pr list` command to fetch all merged PRs at once. Only use per-PR `gh pr view` calls for linked issues. Cap linked-issue fetches at 50 PRs to limit API calls.
+- **API efficiency:** Use the batch `gh pr list` command to fetch all merged PRs at once (up to 200). All returned PRs appear in the Pull Requests table. Only use per-PR `gh pr view` calls for linked issues, capping these at 50 PRs to limit API calls. If the batch fetch hits the 200 limit, add "*and possibly more pull requests beyond this window*" to the table.
 - **Label deduplication:** When showing labels in the "By Area" section, collect labels from all PRs that touch files in that directory, deduplicate, and sort alphabetically.
 - **Rate limit resilience:** If any `gh` command fails mid-collection (after the initial availability check passed), use whatever PR data has been gathered so far and continue to Step 3. Do not abort the entire recap because of a single failed API call.
+- **Reviewer matching:** Match contributors to GitHub reviewers using the `author.login` field from PRs they authored. If a contributor's GitHub login appears in the `reviews` array of other PRs, list those PRs under "Also reviewed." If no match can be determined between a git author name and a GitHub login, skip the "Also reviewed" line for that contributor.
