@@ -152,25 +152,49 @@ Compare `mergeCommit.oid` from each PR (from step 2.5b) against the commit SHAs 
 
 Using the collected data, produce a summary in EXACTLY this format:
 
+**If GitHub data is unavailable** (Step 2.5 was skipped), add this line at the very top of the recap output, before the Summary:
+
+*Note: GitHub CLI not available — showing git-only recap. Install `gh` and run `gh auth login` for PR-enriched recaps.*
+
+When GitHub data is unavailable, produce all sections exactly as before (without PR enrichment) and omit the "Pull Requests" section entirely.
+
 ```
 ## Repository Recap (last <duration>)
 
 ### Summary
 <N> commits by <N> contributors. <N> files changed (+<additions> / -<deletions> lines).
 Main areas: <top 3-5 directories by change volume>.
+<if GitHub data available and PRs found:>
+<N> pull requests merged, covering <N> linked issues. Top labels: `label1`, `label2`, `label3`.
 
 ### By Contributor
 **<Author Name>** (<N> commits)
-- <2-3 sentence summary of what they did, derived from their commit messages>
+- <2-3 sentence summary of what they did. For commits linked to PRs, use the PR title and a 1-2 sentence AI-generated summary of the PR body instead of raw commit messages. For commits not linked to PRs, use commit messages as before.>
 - Files: <top changed directories/files with stats, e.g. src/auth/*.ts (8 files, +400/-120)>
+<if GitHub data available:>
+- Also reviewed: #<PR number>, #<PR number> <list PRs where this person left reviews, if any>
 
 <repeat for each contributor, ordered by commit count descending>
 
 ### By Area
 **<directory path>** — <N> files changed (+<additions>/-<deletions>)
 - <1-2 sentence summary of changes> (<contributor names>)
+<if GitHub data available and PRs with labels touched this area:>
+- Labels: `label1`, `label2` <deduplicated, sorted alphabetically>
 
 <repeat for top areas, ordered by change volume descending>
+
+<if GitHub data available and PRs were found:>
+### Pull Requests
+
+| PR | Author | Summary | Labels | Reviewers | Issues |
+|----|--------|---------|--------|-----------|--------|
+| #<number> | <author login> | <1-2 sentence AI summary of PR body; use PR title if body is empty or only template boilerplate> | `label1`, `label2` or — | <reviewer> ✅ or 🔄, or — | #<issue>, #<issue> or — |
+
+<list all merged PRs ordered by merge date descending>
+<if more than 50 PRs: add "*and N more pull requests*" at the end>
+
+Review status icons: ✅ = approved, 🔄 = changes requested.
 
 ### Most Changed Files
 1. <file path> (+<additions>/-<deletions>)
@@ -193,3 +217,8 @@ Main areas: <top 3-5 directories by change volume>.
 - **File stats:** Always aggregate per-file stats by directory for the "By Area" section. Use individual file paths only in "Most Changed Files."
 - **Commit message analysis:** Read commit messages to understand WHAT changed, not just WHERE. The recap should tell a story, not just list statistics.
 - **Active branches:** Show as a dedicated table section. Skip `origin/HEAD` and default integration branches (`main`, `master`, `develop`). Strip the `origin/` prefix from branch names for cleaner display (e.g., `origin/feat/login` → `feat/login`). If there are no feature branches, omit the "Active Branches" section entirely. Mark branches as "Yes" in the Merged column if they appear in `git branch -r --merged main`.
+- **GitHub data is optional:** If `gh` is not installed or not authenticated, produce the recap without PR data. Add the graceful degradation note at the top. All existing sections render exactly as before. The "Pull Requests" section is omitted entirely.
+- **PR description summarization:** Condense each PR's body into 1-2 sentences that capture what the PR accomplished and why. Strip template boilerplate (checkboxes, `## Description` headers, horizontal rules, empty sections) before summarizing. If the body is empty or only contains template text, use the PR title as the summary.
+- **API efficiency:** Use the batch `gh pr list` command to fetch all merged PRs at once. Only use per-PR `gh pr view` calls for linked issues. Cap linked-issue fetches at 50 PRs to limit API calls.
+- **Label deduplication:** When showing labels in the "By Area" section, collect labels from all PRs that touch files in that directory, deduplicate, and sort alphabetically.
+- **Rate limit resilience:** If any `gh` command fails mid-collection (after the initial availability check passed), use whatever PR data has been gathered so far and continue to Step 3. Do not abort the entire recap because of a single failed API call.
