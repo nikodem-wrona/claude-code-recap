@@ -7,7 +7,7 @@ A Claude Code plugin that generates structured summaries of what happened in you
 ### From a git repository
 
 ```bash
-claude plugin install https://github.com/your-username/claude-code-recap
+claude plugin install https://github.com/nikodem-wrona/claude-code-recap
 ```
 
 ### Local development

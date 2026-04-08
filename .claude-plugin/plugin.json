@@ -5,6 +5,8 @@
   "author": {
     "name": "Nikodem Wrona"
   },
+  "repository": "https://github.com/nikodem-wrona/claude-code-recap",
+  "homepage": "https://github.com/nikodem-wrona/claude-code-recap",
   "license": "MIT",
   "keywords": ["git", "recap", "summary", "changelog"]
 }
