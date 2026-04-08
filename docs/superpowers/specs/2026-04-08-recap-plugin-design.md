@@ -169,7 +169,7 @@ Main areas: auth, API, infrastructure.
 
 ## Out of Scope
 
-- Pull request / issue integration (GitHub API)
+- Pull request / issue integration (GitHub API) — **moved in-scope**, see [GitHub PR Enrichment spec](2026-04-08-gh-pr-enrichment-design.md)
 - Natural language time parsing ("last night", "since Monday")
 - MCP servers, hooks, or bin scripts
 - Interactive / conversational flow for specifying time ranges
