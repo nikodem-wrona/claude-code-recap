@@ -14,7 +14,7 @@ A Claude Code plugin that generates layered summaries of what happened in a git 
 ## Plugin Structure
 
 ```
-claude-code-recap/
+repo-recap/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin manifest
 ├── skills/
@@ -30,7 +30,7 @@ claude-code-recap/
 
 ```json
 {
-  "name": "claude-code-recap",
+  "name": "repo-recap",
   "version": "1.0.0",
   "description": "Generate layered summaries of what happened in your repository",
   "author": {

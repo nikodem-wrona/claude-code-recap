@@ -1,12 +1,12 @@
 {
-  "name": "claude-code-recap",
+  "name": "repo-recap",
   "version": "1.0.0",
   "description": "Generate layered summaries of what happened in your repository",
   "author": {
     "name": "Nikodem Wrona"
   },
-  "repository": "https://github.com/nikodem-wrona/claude-code-recap",
-  "homepage": "https://github.com/nikodem-wrona/claude-code-recap",
+  "repository": "https://github.com/nikodem-wrona/repo-recap",
+  "homepage": "https://github.com/nikodem-wrona/repo-recap",
   "license": "MIT",
   "keywords": ["git", "recap", "summary", "changelog"]
 }

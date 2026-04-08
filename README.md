@@ -1,4 +1,4 @@
-# claude-code-recap
+# repo-recap
 
 A Claude Code plugin that generates structured summaries of what happened in your git repository. Get a quick overview of who did what, which areas changed, and what the most active files were — all from a single slash command.
 
@@ -9,8 +9,8 @@ When the [GitHub CLI (`gh`)](https://cli.github.com/) is installed and authentic
 ### Clone and load
 
 ```bash
-git clone https://github.com/nikodem-wrona/claude-code-recap ~/.claude/plugins/claude-code-recap
-claude --plugin-dir ~/.claude/plugins/claude-code-recap
+git clone https://github.com/nikodem-wrona/repo-recap ~/.claude/plugins/repo-recap
+claude --plugin-dir ~/.claude/plugins/repo-recap
 ```
 
 ### Local development
@@ -18,7 +18,7 @@ claude --plugin-dir ~/.claude/plugins/claude-code-recap
 If you've cloned the repo elsewhere, point to it directly:
 
 ```bash
-claude --plugin-dir /path/to/claude-code-recap
+claude --plugin-dir /path/to/repo-recap
 ```
 
 The `--plugin-dir` flag loads the plugin for a single session without installing it globally.
@@ -150,7 +150,7 @@ If `gh` is not installed or not authenticated, the recap falls back to git-only 
 ## Plugin Structure
 
 ```
-claude-code-recap/
+repo-recap/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin manifest
 ├── skills/

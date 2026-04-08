@@ -15,7 +15,7 @@
 ## File Structure
 
 ```
-claude-code-recap/
+repo-recap/
 ├── .claude-plugin/
 │   └── plugin.json              # Plugin manifest (create)
 ├── skills/
@@ -41,7 +41,7 @@ Three files to create. All are declarative (JSON/markdown) — no compiled code,
 
 ```json
 {
-  "name": "claude-code-recap",
+  "name": "repo-recap",
   "version": "1.0.0",
   "description": "Generate layered summaries of what happened in your repository",
   "author": {
@@ -303,7 +303,7 @@ In the same Claude Code session with `--plugin-dir .`:
 Update `README.md` with installation and usage instructions:
 
 ```markdown
-# claude-code-recap
+# repo-recap
 
 A Claude Code plugin that helps you understand what happened in your repository while you were away.
 
@@ -315,7 +315,7 @@ claude plugin install <published-url-or-path>
 
 Or for local development:
 ```bash
-claude --plugin-dir /path/to/claude-code-recap
+claude --plugin-dir /path/to/repo-recap
 ```
 
 ## Usage
